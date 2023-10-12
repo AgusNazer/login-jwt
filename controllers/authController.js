@@ -28,25 +28,33 @@ exports.registerJWT = async (req, res) => {
   }
 };
 
-// exports.login = async (req, res) => {
-//   const { username, password } = req.body;
+exports.login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-//   // Busca el usuario en la base de datos
-//   const user = await User.findOne({ username });
+    // Busca al usuario por su nombre de usuario en la base de datos
+    const user = await User.findOne({ username });
 
-//   if (!user) {
-//     return res.status(401).json({ message: 'Usuario no encontrado' });
-//   }
+    // Si no se encuentra al usuario, devuelve un mensaje de error
+    if (!user) {
+      return res.status(401).json({ message: 'Usuario no encontrado' });
+    }
 
-//   // Verifica la contraseña
-//   const validPassword = await bcrypt.compare(password, user.password);
+    // Verifica la contraseña
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
-//   if (!validPassword) {
-//     return res.status(401).json({ message: 'Contraseña incorrecta' });
-//   }
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Contraseña incorrecta' });
+    }
 
-//   // Genera un token JWT
-//   const token = jwt.sign({ username: user.username }, secretKey);
+    // Si el usuario y la contraseña son válidos, genera un nuevo token JWT
+    const token = jwt.sign({ username: user.username }, process.env.SECRET, { expiresIn: '1h' });
+    console.log('Token generado del login:', token);
 
-//   res.json({ token });
-// };
+    res.json({ token });
+  } catch (error) {
+    console.error('Error en el inicio de sesión:', error);
+    return res.status(500).json({ message: 'Error en el inicio de sesión', error: error.message });
+  }
+};
+
