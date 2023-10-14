@@ -4,11 +4,13 @@ const jwt = require('jsonwebtoken');
 
 exports.authenticateToken = (req, res, next) => {
   try {
-    const token = req.headers.authorization.split(' ')[1];
+    const authorizationHeader = req.headers.authorization;
 
-    if (!token) {
+    if (!authorizationHeader) {
       return res.status(401).json({ message: 'Acceso denegado' });
     }
+
+    const token = authorizationHeader.split(' ')[1];
 
     jwt.verify(token, process.env.SECRET, (err, user) => {
       if (err) {
@@ -17,6 +19,8 @@ exports.authenticateToken = (req, res, next) => {
         }
         return res.status(403).json({ message: 'Token no válido' });
       }
+      // Token válido
+      // return res.status(200).json({ message: 'Token válido' });
       req.user = user;
       next();
     });
